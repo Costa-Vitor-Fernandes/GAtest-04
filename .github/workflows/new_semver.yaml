@@ -185,6 +185,7 @@ jobs:
           }
 
           calculateVersion();
+          EOF
 
       - name: Generate version summary
         id: summary
