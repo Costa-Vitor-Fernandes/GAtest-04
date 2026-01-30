@@ -1,6 +1,7 @@
           const { execSync } = require('child_process');
 
           function generateSummary() {
+            console.warn('GITHUB_BASE_REF:', process.env.GITHUB_BASE_REF)
             const commits = execSync('git log origin/main..HEAD --format=%s')
               .toString()
               .trim()
