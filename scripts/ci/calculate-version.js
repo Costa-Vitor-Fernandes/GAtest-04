@@ -41,23 +41,36 @@ function getCommitsFromTag() {
 }
 
 function analyzeCommitMessage(message) {
-  const firstLine = message.split('\n')[0];
+  const lines = message.split('\n');
+  const firstLine = lines[0];
   
-  const types = ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'];
-  const typeMatch = types.find(type => firstLine.startsWith(`${type}:`) || firstLine.startsWith(`${type}(`));
+  // Regex para Conventional Commits
+  const pattern = /^(\w+)(?:\((.+)\))?(!?): (.+)/;
+  const match = firstLine.match(pattern);
   
-  if (!typeMatch) {
-    return { valid: false, type: null, breaking: false };
+  if (!match) {
+    return { valid: false };
   }
 
-  const hasExclamation = firstLine.includes('!:');
+  const [_, type, scope, breakingExclamation, description] = match;
+  
+  const types = ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'];
+  
+  if (!types.includes(type)) {
+    return { valid: false };
+  }
+
+  // Verifica BREAKING CHANGE no rodapé ou "!" no cabeçalho
   const hasBreakingFooter = message.includes('BREAKING CHANGE:');
-  const isMinor = firstLine.includes('feat')
-  const breaking = hasExclamation || hasBreakingFooter;
+  const isBreaking = breakingExclamation === '!' || hasBreakingFooter;
 
-  return { valid: true, type: typeMatch, breaking, isMinor };
+  return { 
+    valid: true, 
+    type, 
+    breaking: isBreaking, 
+    isMinor: type === 'feat' 
+  };
 }
-
 function determineVersionBump(commits) {
   let bump = 'patch'; 
   const invalidCommits = [];
