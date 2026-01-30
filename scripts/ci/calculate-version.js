@@ -95,7 +95,7 @@ function main() {
       
       const comment = `❌ **Commits inválidos detectados**\n\nOs seguintes commits não seguem o padrão Conventional Commits:\n\n${commitList}\n\n📖 Consulte: https://www.conventionalcommits.org/`;
       
-      console.error('Invalid commits found:', invalidCommits);
+      console.error('Invalid commits found:', invalidCommits, 'comment:', comment, 'getCommitsFromTag()', getCommitsFromTag());
       fs.appendFileSync(process.env.GITHUB_OUTPUT, `comment=${comment}\n`);
       process.exit(1);
     }
