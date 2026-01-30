@@ -59,7 +59,7 @@ function analyzeCommitMessage(message) {
 }
 
 function determineVersionBump(commits) {
-  let bump = 'patch';
+  let bump = 'patch'; 
   const invalidCommits = [];
 
   for (const commit of commits) {
@@ -72,13 +72,11 @@ function determineVersionBump(commits) {
       });
       continue;
     }
-
     if (analysis.breaking) {
       bump = 'major';
+    } else if (analysis.isMinor && bump !== 'major') {
+      bump = 'minor';
     } 
-    else if(analysis.isMinor) bump = 'minor'
-    else if (analysis.type === 'fix') bump = 'patch';
-    
   }
 
   return { bump, invalidCommits };
