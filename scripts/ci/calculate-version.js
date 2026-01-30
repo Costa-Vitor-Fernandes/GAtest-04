@@ -52,9 +52,10 @@ function analyzeCommitMessage(message) {
 
   const hasExclamation = firstLine.includes('!:');
   const hasBreakingFooter = message.includes('BREAKING CHANGE:');
+  const isMinor = firstLine.includes('feat')
   const breaking = hasExclamation || hasBreakingFooter;
 
-  return { valid: true, type: typeMatch, breaking };
+  return { valid: true, type: typeMatch, breaking, isMinor };
 }
 
 function determineVersionBump(commits) {
@@ -74,9 +75,10 @@ function determineVersionBump(commits) {
 
     if (analysis.breaking) {
       bump = 'major';
-    } else if (analysis.type === 'feat' && bump !== 'major') {
-      bump = 'minor';
-    }
+    } 
+    else if(analysis.isMinor) bump = 'minor'
+    else if (analysis.type === 'fix') bump = 'patch';
+    
   }
 
   return { bump, invalidCommits };
