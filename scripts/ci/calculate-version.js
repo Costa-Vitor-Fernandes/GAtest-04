@@ -41,69 +41,47 @@ function getCommitsFromTag() {
 }
 
 function analyzeCommitMessage(message) {
-  const lines = message.split('\n');
-  const firstLine = lines[0];
-  
-  // Regex para Conventional Commits
-  const pattern = /^(\w+)(?:\((.+)\))?(!?): (.+)/;
-  const match = firstLine.match(pattern);
-  
-  if (!match) {
-    return { valid: false };
-  }
-
-  const [_, type, scope, breakingExclamation, description] = match;
+  const firstLine = message.split('\n')[0];
   
   const types = ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'];
+  const typeMatch = types.find(type => firstLine.startsWith(`${type}:`) || firstLine.startsWith(`${type}(`));
   
-  if (!types.includes(type)) {
-    return { valid: false };
+  if (!typeMatch) {
+    return { valid: false, type: null, breaking: false };
   }
 
-  // Verifica BREAKING CHANGE no rodapé ou "!" no cabeçalho
+  const hasExclamation = firstLine.includes('!:');
   const hasBreakingFooter = message.includes('BREAKING CHANGE:');
-  const isBreaking = breakingExclamation === '!' || hasBreakingFooter;   
+  const isMinor = firstLine.includes('feat')
+  const breaking = hasExclamation || hasBreakingFooter;
 
-  return { 
-    valid: true, 
-    type, 
-    breaking: isBreaking, 
-    isMinor: type === 'feat' 
-  };
+  return { valid: true, type: typeMatch, breaking, isMinor };
 }
-function determineVersionBump(commits, prTitle) {
-  let bump = 'patch'; 
-  const invalidItems = [];
 
-  // Criamos uma lista unificada: o título do PR + todos os commits
-  // Isso garante que NADA escape da validação
-  const itemsToAnalyze = [
-    { sha: 'PR_TITLE', message: prTitle },
-    ...commits
-  ];
+function determineVersionBump(commits) {
+  let bump = 'patch';
+  const invalidCommits = [];
 
-  for (const item of itemsToAnalyze) {
-    if (!item.message) continue; // Pula se o título do PR for nulo
-
-    const analysis = analyzeCommitMessage(item.message);
+  for (const commit of commits) {
+    const analysis = analyzeCommitMessage(commit.message);
 
     if (!analysis.valid) {
-      invalidItems.push({
-        sha: item.sha.substring(0, 7),
-        message: item.message.split('\n')[0]
+      invalidCommits.push({
+        sha: commit.sha.substring(0, 7),
+        message: commit.message.split('\n')[0]
       });
       continue;
     }
 
-    // Hierarquia rigorosa: Major > Minor > Patch
     if (analysis.breaking) {
       bump = 'major';
-    } else if (analysis.isMinor && bump !== 'major') {
-      bump = 'minor';
     } 
+    else if(analysis.isMinor) bump = 'minor'
+    else if (analysis.type === 'fix') bump = 'patch';
+    
   }
 
-  return { bump, invalidItems };
+  return { bump, invalidCommits };
 }
 
 function getCurrentVersion() {
@@ -128,8 +106,8 @@ function main() {
       writeOutput(comment);
       return;
     }
-    const prTitle = process.env.PR_TITLE;
-    const { bump, invalidCommits } = determineVersionBump(commits, prTitle);
+
+    const { bump, invalidCommits } = determineVersionBump(commits);
 
     if (invalidCommits.length > 0) {
       const commitList = invalidCommits
@@ -172,5 +150,3 @@ Oi! Este PR vai gerar a versão **v${nextVersion}**.
     process.exit(1);
   }
 }
-
-main();
