@@ -1,34 +1,47 @@
 name: Semantic Version Check
-on: [pull_request]
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
-  check:
+  semantic-check:
+    name: Validate and Predict Version
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    
+    steps:    
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
-      - id: validate
-        run: node .github/scripts/calculate-version.cjs  # NOME DO SEU ARQUIVO
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       
-      - uses: peter-evans/create-or-update-comment@v3
+      - name: Install dependencies
+        run: |
+          npm install semver
+      
+      - name: Calculate Next Version
+        id: version
+        run: |
+          cd ./scripts/ci
+          node calculate-version.js
+        env:
+          # MUDAR: Usa 'v0.0.1' (tag), não hash
+          BASE_TAG: v0.0.1
+          BASE_VERSION: 0.0.1
+          PR_TITLE: ${{ github.event.pull_request.title }}
+      
+      - name: Comment PR with Version
+        uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            **📦 Próxima versão:** `${{ steps.validate.outputs.next_version }}`
-            
-            ${{ steps.validate.outputs.analysis }}
-            
-            ---
-            *Baseado nos commits desde ${{ steps.validate.outputs.last_tag }}*
-          edit-mode: replace
-          comment-tag: version-preview
+          body: ${{ steps.version.outputs.comment }}
