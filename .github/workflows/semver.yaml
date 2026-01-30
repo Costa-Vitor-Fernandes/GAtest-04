@@ -1,84 +1,36 @@
-name: Semantic Version Validation
-
-on:
-  pull_request:
-    types: [opened, edited, synchronize, reopened]
+name: Version Check
+on: [pull_request]
+permissions: { contents: read, pull-requests: write }
 
 jobs:
-  validate-and-predict:
+  check:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    
     steps:
-      - name: Validate Semantic PR
-        uses: amannn/action-semantic-pull-request@v5
+      - uses: amannn/action-semantic-pull-request@v5
+        with:
+          types: feat fix docs style refactor perf test build ci chore revert
+          scopes: '*'
+      
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - id: calc
+        run: node .github/scripts/version.cjs
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          validate_single_commit: false
-          validate_commits: true
-          types: |
-            feat
-            fix
-            chore
-            docs
-            style
-            refactor
-            perf
-            test
-            build
-            ci
-            revert
-          scopes: |
-            *
-      
-      - name: Checkout with full history
-
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Setup Node.js
-
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Calculate Next Version
-
-        id: calc-version
-        working-directory: ./scripts/ci
-        run: node calculate-version.js
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-      
-      - name: Create or Update Version Comment
-        if: success() && steps.calc-version.outputs.next_version
-        uses: peter-evans/create-or-update-comment@v3
+          BASE_TAG: 4a112c754abba0bb893ae3d22c1b5e825c1e1584  # Tua hash
+          BASE_VERSION: 0.0.1  # Primeira release
+
+      - uses: peter-evans/create-or-update-comment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            ## 📦 Previsão de Versão
+            **📦 Próxima versão:** `${{ steps.calc.outputs.next }}`
             
-            **Próxima versão estimada:** `${{ steps.calc-version.outputs.next_version }}`
-            
-            ### 📊 Análise:
-            ${{ steps.calc-version.outputs.analysis }}
-            
-            ### ℹ️ Como isso funciona:
-            - ⚠️ **Breaking change**: Incrementa MAJOR (ex: 1.0.0 → 2.0.0)
-            - ✨ **feat**: Incrementa MINOR (ex: 1.0.0 → 1.1.0)
-            - 🐛 **fix**: Incrementa PATCH (ex: 1.0.0 → 1.0.1)
-            - 📝 **outros**: Mantém a versão atual
+            ${{ steps.calc.outputs.analysis }}
             
             ---
-            *Baseado em commits desde a tag `${{ steps.calc-version.outputs.last_version }}`*
+            *Última tag: ${{ steps.calc.outputs.last }}*
           edit-mode: replace
           comment-tag: semantic-version-preview
