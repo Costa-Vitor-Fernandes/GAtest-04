@@ -71,20 +71,31 @@ function analyzeCommitMessage(message) {
     isMinor: type === 'feat' 
   };
 }
-function determineVersionBump(commits) {
+function determineVersionBump(commits, prTitle) {
   let bump = 'patch'; 
-  const invalidCommits = [];
+  const invalidItems = [];
 
-  for (const commit of commits) {
-    const analysis = analyzeCommitMessage(commit.message);
+  // Criamos uma lista unificada: o título do PR + todos os commits
+  // Isso garante que NADA escape da validação
+  const itemsToAnalyze = [
+    { sha: 'PR_TITLE', message: prTitle },
+    ...commits
+  ];
+
+  for (const item of itemsToAnalyze) {
+    if (!item.message) continue; // Pula se o título do PR for nulo
+
+    const analysis = analyzeCommitMessage(item.message);
 
     if (!analysis.valid) {
-      invalidCommits.push({
-        sha: commit.sha.substring(0, 7),
-        message: commit.message.split('\n')[0]
+      invalidItems.push({
+        sha: item.sha.substring(0, 7),
+        message: item.message.split('\n')[0]
       });
       continue;
     }
+
+    // Hierarquia rigorosa: Major > Minor > Patch
     if (analysis.breaking) {
       bump = 'major';
     } else if (analysis.isMinor && bump !== 'major') {
@@ -92,7 +103,7 @@ function determineVersionBump(commits) {
     } 
   }
 
-  return { bump, invalidCommits };
+  return { bump, invalidItems };
 }
 
 function getCurrentVersion() {
