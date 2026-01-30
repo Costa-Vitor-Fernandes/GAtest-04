@@ -14,6 +14,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           types: feat fix docs style refactor perf test build ci chore revert
+          headerPattern: '^(\w+)(?:\([^)]+\))?!?:\s.+'
+          headerPatternCorrespondence: ['type']
           requireScope: false
           validateSingleCommit: false
       
