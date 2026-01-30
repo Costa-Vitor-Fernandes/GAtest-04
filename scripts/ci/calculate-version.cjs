@@ -50,6 +50,7 @@ async function calculateVersion() {
     // 4. Detecta Breaking Changes para o output informativo
     // Ajustado para olhar do HEAD até a última tag (ou todo o histórico)
     const logRange = currentVersion === '0.0.0' ? 'HEAD' : `v${currentVersion}..HEAD`;
+    execSync('git fetch --tags --force');
     const commits = execSync(`git log ${logRange} --format=%B`).toString();
     const hasBreakingChange = commits.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/.test(commits);
 
