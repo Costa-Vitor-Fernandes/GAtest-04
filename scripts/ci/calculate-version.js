@@ -2,24 +2,37 @@ import semver from 'semver';
 import { execSync } from 'child_process';
 import fs from 'fs';
 
-// BASE_TAG: commit hash or tag reference (e.g., "4a112c754abba0bb893ae3d22c1b5e825c1e1584" or "v0.0.1")
+// BASE_TAG: commit hash or tag reference (e.g., "739431593c8d52063b1f757975c0d47fc12007f9" or "v0.0.1")
 // BASE_VERSION: the semantic version at that tag/commit (e.g., "0.0.1")
-const baseTag = process.env.BASE_TAG || '4a112c754abba0bb893ae3d22c1b5e825c1e1584';
+const baseTag = process.env.BASE_TAG || '739431593c8d52063b1f757975c0d47fc12007f9';
 const baseVersion = process.env.BASE_VERSION || '0.0.1';
 
 function getCommitsFromTag() {
   try {
-    const commits = execSync(`git log ${baseTag}..HEAD --format=%H%n%s%n%b%n---END---`, { encoding: 'utf-8' })
-      .trim()
-      .split('####')
-      .filter(Boolean)
-      .map(commit => {
-        const [hash, subject, body] = commit.split('||');
-        return {
-          sha: hash.trim(),
-          message: `${subject}\n${body || ''}`.trim()
-        };
+    const output = execSync(`git log ${baseTag}..HEAD --format=%H%n%s%n%b%n---END---`, { encoding: 'utf-8' })
+      .trim();
+    
+    if (!output) {
+      return [];
+    }
+
+    const commits = [];
+    const blocks = output.split('---END---').filter(Boolean);
+    
+    for (const block of blocks) {
+      const lines = block.trim().split('\n');
+      if (lines.length < 2) continue;
+      
+      const sha = lines[0];
+      const subject = lines[1];
+      const body = lines.slice(2).join('\n').trim();
+      
+      commits.push({
+        sha: sha,
+        message: body ? `${subject}\n${body}` : subject
       });
+    }
+    
     return commits;
   } catch (error) {
     console.error('Error getting commits from git:', error.message);
@@ -95,7 +108,7 @@ function main() {
       
       const comment = `❌ **Commits inválidos detectados**\n\nOs seguintes commits não seguem o padrão Conventional Commits:\n\n${commitList}\n\n📖 Consulte: https://www.conventionalcommits.org/`;
       
-      console.error('Invalid commits found:', invalidCommits, 'comment:', comment, 'getCommitsFromTag()', getCommitsFromTag());
+      console.error('Invalid commits found:', invalidCommits);
       fs.appendFileSync(process.env.GITHUB_OUTPUT, `comment=${comment}\n`);
       process.exit(1);
     }
