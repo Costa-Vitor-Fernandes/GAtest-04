@@ -1,0 +1,103 @@
+name: 2(movendo scripts)Conventional Commits Validation
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  validate-commits:
+    name: Validate Conventional Commits
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: |
+          npm install --save-dev \
+            @commitlint/cli@18.4.3 \
+            @commitlint/config-conventional@18.4.3 \
+            conventional-changelog-conventionalcommits@7.0.2 \
+            conventional-recommended-bump@9.0.0 \
+            semver@7.5.4
+
+      - name: Create commitlint config
+        run: |
+          cat > commitlint.config.js << 'EOF'
+          module.exports = {
+            extends: ['@commitlint/config-conventional'],
+            rules: {
+              'type-enum': [
+                2,
+                'always',
+                [
+                  'feat',     // Nova funcionalidade
+                  'fix',      // Correção de bug
+                  'docs',     // Apenas documentação
+                  'style',    // Formatação, sem mudança de código
+                  'refactor', // Refatoração sem mudança de funcionalidade
+                  'perf',     // Melhoria de performance
+                  'test',     // Adição/correção de testes
+                  'chore',    // Tarefas de build, configs, etc
+                  'ci',       // Mudanças em CI/CD
+                  'build',    // Mudanças no sistema de build
+                  'revert'    // Reversão de commit
+                ]
+              ],
+              'subject-case': [0]
+            }
+          };
+          EOF
+
+      - name: Validate PR title
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "Validando título do PR: $PR_TITLE"
+          echo ""
+          
+          if ! echo "$PR_TITLE" | npx commitlint --verbose; then
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "❌ Título do PR está fora do padrão!"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            exit 1
+          fi
+
+      - name: Validate commit messages
+        env:
+        GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node validate-commits.cjs
+
+      - name: Calculate next version
+        id: version
+        run: |
+          node calculate-version.cjs
+
+      - name: Generate version summary
+        id: summary
+        run: |
+          node generate-summary.cjs
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        env:
+          CURRENT_VERSION: ${{ steps.version.outputs.current }}
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+          RELEASE_TYPE: ${{ steps.version.outputs.release_type }}
+          HAS_BREAKING: ${{ steps.version.outputs.breaking }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            node comment-on-pr.cjs
