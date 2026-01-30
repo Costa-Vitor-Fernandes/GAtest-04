@@ -11,17 +11,27 @@ async function calculateVersion() {
 
     let currentVersion = '0.0.0';
     try {
-      // Busca a tag mais recente que siga o padrão v1.2.3
-      const latestTag = execSync('git describe --tags --abbrev=0 2>/dev/null')
+      // 1. Pegamos a tag bruta do Git
+      const rawTag = execSync('git describe --tags --abbrev=0', { stdio: ['pipe', 'pipe', 'ignore'] })
         .toString()
-        .trim()
-        .replace(/^v/, '');
-      
-      currentVersion = semver.valid(latestTag) || '0.0.0';
-    } catch (e) {
-      console.log('ℹ️ Nenhuma tag encontrada ou erro no git describe. Iniciando do 0.0.0');
-    }
+        .trim();
 
+      // 2. Usamos o semver para limpar (remove o 'v', espaços, etc.)
+      // semver.clean('  v1.2.3  ') -> '1.2.3'
+      const cleanedTag = semver.clean(rawTag);
+
+      if (cleanedTag) {
+        currentVersion = cleanedTag;
+      } else {
+        // Se o clean falhar (ex: tag '1.2'), o coerce tenta adivinhar a versão
+        const coerced = semver.coerce(rawTag);
+        currentVersion = coerced ? coerced.version : '0.0.0';
+      }
+      
+      console.log(`✅ Tag encontrada: ${rawTag} -> Versão processada: ${currentVersion}`);
+    } catch (e) {
+      console.log('ℹ️ Nenhuma tag válida encontrada. Iniciando contagem do 0.0.0');
+    }
     console.log(`📡 Versão atual detectada: ${currentVersion}`);
 
     // 2. Determina o bump (Isso é assíncrono!)
