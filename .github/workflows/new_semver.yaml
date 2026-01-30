@@ -128,7 +128,7 @@ jobs:
       - name: Calculate next version
         id: version
         run: |
-          node ./scripts/ci/calculate-next-version.cjs
+          node ./scripts/ci/calculate-version.cjs
           
       - name: Generate version summary
         id: summary
