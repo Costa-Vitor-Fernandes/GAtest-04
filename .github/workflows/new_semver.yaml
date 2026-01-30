@@ -77,7 +77,7 @@ jobs:
 
       - name: Validate commit messages
         env:
-        GITHUB_BASE_REF: "${{ github.event.pull_request.base.ref }}"
+          GITHUB_BASE_REF: "${{ github.event.pull_request.base.ref }}"
         run: node validate-commits.cjs
 
       - name: Calculate next version
