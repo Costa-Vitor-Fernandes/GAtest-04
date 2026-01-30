@@ -1,15 +1,19 @@
 name: Version Check
 on: [pull_request]
-permissions: { contents: read, pull-requests: write }
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
     steps:
       - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           types: feat fix docs style refactor perf test build ci chore revert
-          scopes: '*'
       
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -18,8 +22,8 @@ jobs:
         run: node .github/scripts/version.cjs
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
-          BASE_TAG: 4a112c754abba0bb893ae3d22c1b5e825c1e1584  # Tua hash
-          BASE_VERSION: 0.0.1  # Primeira release
+          BASE_TAG: 4a112c754abba0bb893ae3d22c1b5e825c1e1584
+          BASE_VERSION: 0.0.1
 
       - uses: peter-evans/create-or-update-comment@v3
         with:
