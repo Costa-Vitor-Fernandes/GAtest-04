@@ -9,49 +9,67 @@ function runCommand(command) {
 }
 
 function validateCommits() {
-  // 1. Tenta pegar a base do PR, se falhar tenta 'main', se falhar tenta 'master'
+//  console.log("🚀 Iniciando validação de mensagens de commit...\n");
+
+  // 1. Definição da Base de Comparação
   let baseRef = process.env.GITHUB_BASE_REF;
   
-  if (!baseRef || baseRef === 'undefined' || baseRef === '') {
-    // Se não for PR, comparamos com o commit anterior para não quebrar
-    console.log("⚠️  GITHUB_BASE_REF não detectada. Validando apenas o último commit.");
-    baseRef = 'HEAD~1';
+  if (!baseRef) {
+    console.log("⚠️  GITHUB_BASE_REF não detectada. Validando contra o commit anterior (HEAD~1).");
+    baseRef = "HEAD~1";
   } else {
     baseRef = `origin/${baseRef}`;
-    // Garante que a branch base existe localmente para comparação
-    //depth 100?
+    // Fetch para garantir que temos o histórico necessário
     runCommand(`git fetch origin ${process.env.GITHUB_BASE_REF} --depth=100`);
   }
 
-  console.log(`🔍 Alvo da validação: ${baseRef}\n`);
-
-  // 2. Obtém os hashes
-  const command = `git log --format=%H ${baseRef}..HEAD`;
-  const commitsRaw = runCommand(command);
+  // 2. Coleta de Commits
+  const commitsRaw = runCommand(`git log --format=%H ${baseRef}..HEAD`);
   
   if (!commitsRaw) {
-    console.log("✅ Nenhum commit novo para validar ou branch base não encontrada.");
+   // console.log("✅ Nenhum commit novo para validar.");
     process.exit(0);
   }
 
   const commits = commitsRaw.split('\n').filter(h => h.length > 0);
   let hasError = false;
 
-  // ... (resto da lógica de loop igual ao anterior)
+  // 3. Loop de Validação
   commits.forEach((hash) => {
+    const shortHash = hash.substring(0, 7);
     const commitMsg = runCommand(`git log -1 --format=%B ${hash}`);
-    if (!commitMsg) return;
+    
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log(`🔍 Validando commit ${shortHash}:`);
+    console.log(`"${commitMsg.split('\n')[0]}"`); // Mostra apenas a primeira linha
 
-    console.log(`Validando: ${hash.substring(0, 7)}`);
     try {
-      // Usamos npx commitlint diretamente
-      execSync(`npx commitlint --input-stdin`, { input: commitMsg, stdio: 'inherit' });
+      // O segredo aqui é passar a mensagem via 'input' e usar 'pipe' para o stdio
+      // para que o erro do commitlint não mate o script imediatamente, mas nos permita capturar o status
+      execSync(`npx commitlint --verbose`, { 
+        input: commitMsg, 
+        stdio: ['pipe', 'inherit', 'inherit'], // Pega o input do código, mas mostra saída no console
+        encoding: 'utf8' 
+      });
+      console.log("\n✅ Commit válido!");
     } catch (e) {
       hasError = true;
+      console.log(`\n❌ Commit ${shortHash} está INVÁLIDO!`);
+      console.log("\n⚠️  DICA: Verifique se há espaço após os dois pontos (ex: feat: add algo)");
     }
+    console.log(""); 
   });
 
-  if (hasError) process.exit(1);
+  // 4. Finalização
+  if (hasError) {
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("❌ Validação falhou. Por favor, corrija as mensagens acima.");
+    console.log("Use: git rebase -i HEAD~N (marcando como 'reword')");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    process.exit(1);
+  }
+
+  console.log("🎉 Todos os commits estão dentro do padrão!");
 }
 
 validateCommits();

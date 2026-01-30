@@ -80,6 +80,7 @@ jobs:
           GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           node ./scripts/ci/validate-commits.cjs
+          
       - name: Calculate next version
         id: version
         env:
