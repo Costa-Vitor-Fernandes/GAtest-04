@@ -89,13 +89,19 @@ function getCurrentVersion() {
   return baseVersion;
 }
 
+function writeOutput(comment) {
+  const delimiter = `ghadelimiter_${Math.random().toString(36).substring(7)}`;
+  const output = `comment<<${delimiter}\n${comment}\n${delimiter}\n`;
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, output);
+}
+
 function main() {
   try {
     const commits = getCommitsFromTag();
     
     if (commits.length === 0) {
       const comment = '⚠️ Nenhum commit encontrado neste Pull Request.';
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `comment=${comment}\n`);
+      writeOutput(comment);
       return;
     }
 
@@ -106,10 +112,16 @@ function main() {
         .map(c => `- \`${c.sha}\`: ${c.message}`)
         .join('\n');
       
-      const comment = `❌ **Commits inválidos detectados**\n\nOs seguintes commits não seguem o padrão Conventional Commits:\n\n${commitList}\n\n📖 Consulte: https://www.conventionalcommits.org/`;
+      const comment = `❌ **Commits inválidos detectados**
+
+Os seguintes commits não seguem o padrão Conventional Commits:
+
+${commitList}
+
+📖 Consulte: https://www.conventionalcommits.org/`;
       
       console.error('Invalid commits found:', invalidCommits);
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `comment=${comment}\n`);
+      writeOutput(comment);
       process.exit(1);
     }
 
@@ -117,17 +129,22 @@ function main() {
     const nextVersion = semver.inc(currentVersion, bump);
     const impact = { major: 'Major', minor: 'Minor', patch: 'Patch' }[bump];
 
-    const comment = `✅ **Previsão de Versão**\n\nOi! Este PR vai gerar a versão **v${nextVersion}**.\n\n📊 **Impacto:** ${impact}\n📌 Estávamos na **v${currentVersion}** e vamos para **v${nextVersion}**`;
+    const comment = `✅ **Previsão de Versão**
+
+Oi! Este PR vai gerar a versão **v${nextVersion}**.
+
+📊 **Impacto:** ${impact}
+📌 Estávamos na **v${currentVersion}** e vamos para **v${nextVersion}**`;
 
     console.log(`Current version: v${currentVersion}`);
     console.log(`Next version: v${nextVersion}`);
     console.log(`Bump type: ${bump}`);
     
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, `comment=${comment}\n`);
+    writeOutput(comment);
   } catch (error) {
     console.error('Error in main execution:', error);
     const comment = `❌ **Erro ao calcular versão**\n\n${error.message}`;
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, `comment=${comment}\n`);
+    writeOutput(comment);
     process.exit(1);
   }
 }
