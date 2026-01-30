@@ -47,7 +47,7 @@ jobs:
             exit 1
           fi
 
-      - name: Validate commit messages
+      - name: Validate PR commit messages
         env:
           GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
