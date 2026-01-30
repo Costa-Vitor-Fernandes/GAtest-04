@@ -124,16 +124,16 @@ jobs:
           fi
           
           echo "✅ Todos os commits estão válidos!"
-          
+
       - name: Calculate next version
         id: version
         run: |
-          node calculate-version.cjs
+          node ./scripts/ci/calculate-version.cjs
 
       - name: Generate version summary
         id: summary
         run: |
-          node generate-summary.cjs
+          node ./scripts/ci/generate-summary.cjs
 
       - name: Comment on PR
         uses: actions/github-script@v7
@@ -145,4 +145,4 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            node comment-on-pr.cjs
+            node ./scripts/ci/comment-on-pr.cjs
