@@ -1,7 +1,7 @@
           const { execSync } = require('child_process');
 
           function generateSummary() {
-            const commits = execSync('git log origin/${{ github.event.pull_request.base.ref }}..HEAD --format=%s')
+            const commits = execSync('git log origin/main..HEAD --format=%s')
               .toString()
               .trim()
               .split('\n');
