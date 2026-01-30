@@ -1,20 +1,20 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 
-// Config do SEU projeto
+// Config
 const PR_TITLE = process.env.PR_TITLE;
 const PR_BASE = process.env.PR_BASE;
 const PR_HEAD = process.env.PR_HEAD;
-const BASE_TAG = process.env.BASE_TAG || 'v0.0.1';
 
-// Pega última tag REAL (se não achar, usa BASE_TAG)
-const lastTag = execSync(`git describe --tags --abbrev=0 2>/dev/null || echo "${BASE_TAG}"`).toString().trim();
+// Pega última tag SemVer (ou v0.0.1 como fallback)
+const lastTag = execSync(`git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "v0.0.1"`)
+  .toString().trim();
 
 // Pega commits do PR (base..head)
 const prCommits = execSync(`git log --oneline --format="%s" ${PR_BASE}..${PR_HEAD} 2>/dev/null || echo ""`)
   .toString().trim().split('\n').filter(Boolean);
 
-// Inclui título do PR (que vira commit no merge)
+// Inclui título do PR
 const allCommits = [PR_TITLE, ...prCommits];
 
 let bump = 'patch';
@@ -22,11 +22,11 @@ const counts = { breaking: 0, feat: 0, fix: 0, other: 0 };
 let invalidCommits = [];
 
 allCommits.forEach(msg => {
-  // Padrão: tipo(escopo)?!?: descrição
+  // Padrão Conventional Commits
   const match = msg.match(/^(\w+)(?:\([^)]+\))?(!?):\s(.+)/);
   
   if (!match) {
-    invalidCommits.push(`"${msg}"`);
+    invalidCommits.push(msg);
     return;
   }
   
@@ -46,22 +46,22 @@ allCommits.forEach(msg => {
   }
 });
 
-// FALHA se tiver commits inválidos
+// FALHA se tiver inválido
 if (invalidCommits.length > 0) {
-  console.error('❌ Commits inválidos encontrados:');
-  invalidCommits.forEach(c => console.error(`  - ${c}`));
-  console.error('\n✅ Padrão exigido: tipo(escopo?): descrição');
-  console.error('   Ex: feat: adiciona login');
+  console.error('❌ Commits fora do padrão:');
+  invalidCommits.forEach(c => console.error(`  - "${c}"`));
+  console.error('\n✅ Padrão: tipo(escopo?): descrição');
+  console.error('   Ex: feat: nova funcionalidade');
   console.error('       fix(api): corrige bug');
   console.error('       feat!: breaking change');
   process.exit(1);
 }
 
-// Pega versão da última tag
+// Pega versão da tag
 const lastVersion = lastTag.replace('v', '');
 const [major, minor, patch] = lastVersion.split('.').map(Number);
 
-// Calcula próxima versão
+// Calcula próxima
 const next = bump === 'major' ? `v${major + 1}.0.0` :
              bump === 'minor' ? `v${major}.${minor + 1}.0` :
                                 `v${major}.${minor}.${patch + 1}`;
