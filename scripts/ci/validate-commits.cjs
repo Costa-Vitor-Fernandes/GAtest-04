@@ -19,6 +19,7 @@ function validateCommits() {
   } else {
     baseRef = `origin/${baseRef}`;
     // Garante que a branch base existe localmente para comparação
+    //depth 100?
     runCommand(`git fetch origin ${process.env.GITHUB_BASE_REF} --depth=100`);
   }
 

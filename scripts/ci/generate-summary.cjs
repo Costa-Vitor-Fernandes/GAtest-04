@@ -2,7 +2,7 @@
 
           function generateSummary() {
             console.warn('GITHUB_BASE_REF:', process.env.GITHUB_BASE_REF)
-            const commits = execSync('git log origin/main..HEAD --format=%s')
+            const commits = execSync(`git log origin/${process.env.GITHUB_BASE_REF}..HEAD --format=%s`)
               .toString()
               .trim()
               .split('\n');

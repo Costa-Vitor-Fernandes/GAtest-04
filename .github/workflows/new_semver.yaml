@@ -76,55 +76,10 @@ jobs:
           fi
 
       - name: Validate commit messages
+        env:
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          # Pega todos os commits do PR
-          git fetch origin ${{ github.event.pull_request.base.ref }}
-          COMMITS=$(git log --format=%H origin/${{ github.event.pull_request.base.ref }}..HEAD)
-          
-          echo "Validando commits do PR..."
-          echo ""
-          
-          HAS_ERROR=0
-          for commit in $COMMITS; do
-            COMMIT_MSG=$(git log -1 --format=%B $commit)
-            COMMIT_SHORT=$(git log -1 --format=%h $commit)
-            
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "Validando commit $COMMIT_SHORT:"
-            echo "$COMMIT_MSG" | head -1
-            echo ""
-            
-            if ! echo "$COMMIT_MSG" | npx commitlint --verbose; then
-              echo ""
-              echo "❌ Commit $COMMIT_SHORT está INVÁLIDO!"
-              echo ""
-              echo "⚠️  ATENÇÃO: Precisa ter ESPAÇO após os dois pontos!"
-              echo ""
-              echo "❌ Errado: feat:add feature"
-              echo "✅ Correto: feat: add feature"
-              echo ""
-              HAS_ERROR=1
-            else
-              echo "✅ Commit válido!"
-            fi
-            echo ""
-          done
-          
-          if [ $HAS_ERROR -eq 1 ]; then
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "❌ Um ou mais commits estão fora do padrão!"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo ""
-            echo "Corrija os commits com:"
-            echo "  git rebase -i HEAD~N  # onde N é o número de commits"
-            echo "  # Marque com 'r' (reword) os commits a corrigir"
-            echo "  git push --force-with-lease"
-            echo ""
-            exit 1
-          fi
-          
-          echo "✅ Todos os commits estão válidos!"
-
+          node ./scripts/ci/validate-commits.cjs
       - name: Calculate next version
         id: version
         env:
