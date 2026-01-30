@@ -62,7 +62,7 @@ function analyzeCommitMessage(message) {
 
   // Verifica BREAKING CHANGE no rodapé ou "!" no cabeçalho
   const hasBreakingFooter = message.includes('BREAKING CHANGE:');
-  const isBreaking = breakingExclamation === '!' || hasBreakingFooter;
+  const isBreaking = breakingExclamation === '!' || hasBreakingFooter;   
 
   return { 
     valid: true, 
