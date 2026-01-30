@@ -9,7 +9,7 @@ const baseVersion = process.env.BASE_VERSION || '0.0.1';
 
 function getCommitsFromTag() {
   try {
-    const output = execSync(`git log ${baseTag}..HEAD --format=%H%n%s%n%b%n---END---`, { encoding: 'utf-8' })
+    const output = execSync(`git log ${baseTag}..HEAD --format=%H%n%s%n%b%n---END--- --no-merges`, { encoding: 'utf-8' })
       .trim();
     
     if (!output) {
