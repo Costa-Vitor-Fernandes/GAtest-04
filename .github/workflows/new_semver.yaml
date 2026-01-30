@@ -34,8 +34,8 @@ jobs:
             conventional-recommended-bump@9.0.0 \
             semver@7.5.4
 
-      - name: Run Commitlint
-        run: npx commitlint --config ./scripts/ci/commitlint.config.js
+      - name: Run Commitlint Config
+        run: npx commitlint --config scripts/ci/commitlint.config.js
 
       - name: Validate PR title
         run: |
