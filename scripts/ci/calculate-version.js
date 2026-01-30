@@ -128,8 +128,8 @@ function main() {
       writeOutput(comment);
       return;
     }
-
-    const { bump, invalidCommits } = determineVersionBump(commits);
+    const prTitle = getPRTitle(); // Aquela função que lê do GITHUB_EVENT_PATH
+    const { bump, invalidCommits } = determineVersionBump(commits, prTitle);
 
     if (invalidCommits.length > 0) {
       const commitList = invalidCommits
