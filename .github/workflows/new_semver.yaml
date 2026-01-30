@@ -79,5 +79,5 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
-            const scriptPath = path.resolve('./scripts/ci/comment-on-pr.cjs');
+            const scriptPath = path.resolve('./scripts/ci/comment-on-pr.mjs');
             require(scriptPath)({github, context, core});
