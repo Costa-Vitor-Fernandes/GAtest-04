@@ -2,9 +2,9 @@ import semver from 'semver';
 import { execSync } from 'child_process';
 import fs from 'fs';
 
-// BASE_TAG: commit hash or tag reference (e.g., "739431593c8d52063b1f757975c0d47fc12007f9" or "v0.0.1")
+// BASE_TAG: commit hash or tag reference (e.g., "4a112c754abba0bb893ae3d22c1b5e825c1e1584" or "v0.0.1")
 // BASE_VERSION: the semantic version at that tag/commit (e.g., "0.0.1")
-const baseTag = process.env.BASE_TAG || '739431593c8d52063b1f757975c0d47fc12007f9';
+const baseTag = process.env.BASE_TAG || '4a112c754abba0bb893ae3d22c1b5e825c1e1584';
 const baseVersion = process.env.BASE_VERSION || '0.0.1';
 
 function getCommitsFromTag() {
