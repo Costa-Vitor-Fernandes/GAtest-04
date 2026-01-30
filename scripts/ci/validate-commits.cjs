@@ -46,7 +46,7 @@ function validateCommits() {
     try {
       // O segredo aqui é passar a mensagem via 'input' e usar 'pipe' para o stdio
       // para que o erro do commitlint não mate o script imediatamente, mas nos permita capturar o status
-      execSync(`npx commitlint --verbose`, { 
+      execSync(`npx commitlint --verbose --config scripts/ci/commitlint.config.js`, { 
         input: commitMsg, 
         stdio: ['pipe', 'inherit', 'inherit'], // Pega o input do código, mas mostra saída no console
         encoding: 'utf8' 
