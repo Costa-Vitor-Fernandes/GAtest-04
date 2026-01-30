@@ -150,3 +150,4 @@ Oi! Este PR vai gerar a versão **v${nextVersion}**.
     process.exit(1);
   }
 }
+main();
