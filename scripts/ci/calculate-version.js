@@ -128,7 +128,7 @@ function main() {
       writeOutput(comment);
       return;
     }
-    const prTitle = getPRTitle(); // Aquela função que lê do GITHUB_EVENT_PATH
+    const prTitle = process.env.PR_TITLE;
     const { bump, invalidCommits } = determineVersionBump(commits, prTitle);
 
     if (invalidCommits.length > 0) {
