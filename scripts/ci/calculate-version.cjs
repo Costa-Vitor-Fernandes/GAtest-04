@@ -1,7 +1,6 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const semver = require('semver');
-const conventionalRecommendedBump = require('conventional-recommended-bump');
 
 function git(command) {
   try {
@@ -12,59 +11,62 @@ function git(command) {
 }
 
 async function run() {
-  console.log("🛠️  Iniciando Processo de Versionamento...");
+  console.log("🛠️  Iniciando Processo de Versionamento Estrito...");
 
   try {
-    // 1. Garantir que o ambiente tem as tags (O GitHub Actions faz clone raso por padrão)
+    // 1. Sincronização de Tags
     git('git fetch --tags --force');
 
-    // 2. Tentar obter a última tag
+    // 2. Obter Versão Atual
     const rawTag = git('git describe --tags --abbrev=0');
     let currentVersion = '0.0.0';
-
     if (rawTag) {
-      // semver.clean remove o 'v' e espaços: 'v1.0.0' -> '1.0.0'
       currentVersion = semver.clean(rawTag) || semver.coerce(rawTag).version || '0.0.0';
     }
     console.log(`📌 Versão Atual: ${currentVersion}`);
 
-    // 3. Calcular o próximo "bump" (salto) baseado nos commits
-    const recommendation = await conventionalRecommendedBump({
-      preset: 'conventionalcommits',
-      tagPrefix: 'v'
-    });
+    // 3. Isolar Commits do PR (ignorando o commit de Merge)
+    // O range origin/main..HEAD pega o que é novo nesta branch
+    const baseBranch = process.env.GITHUB_BASE_REF || 'main';
+    
+    // --no-merges é a chave aqui! Ignora o "Merge pull request..."
+    const prCommits = git(`git log origin/${baseBranch}..HEAD --format=%B --no-merges`) || "";
+    
+    console.log("📝 Analisando mensagens de commit do PR...");
 
-    const releaseType = recommendation.releaseType || 'patch';
+    // 4. Lógica de Decisão Manual (Mais segura que bibliotecas externas neste caso)
+    let releaseType = 'patch'; // Padrão
+
+    if (prCommits.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/m.test(prCommits)) {
+      releaseType = 'major';
+    } else if (/^feat(\(.+\))?:/m.test(prCommits)) {
+      releaseType = 'minor';
+    } else if (/^fix(\(.+\))?:/m.test(prCommits)) {
+      releaseType = 'patch';
+    } else {
+      console.log("ℹ️ Nenhum prefixo convencional (feat/fix) encontrado. Mantendo PATCH.");
+      releaseType = 'patch';
+    }
+
     const nextVersion = semver.inc(currentVersion, releaseType);
-    console.log(`📈 Tipo de Release: ${releaseType.toUpperCase()}`);
+    
+    console.log(`📈 Decisão: ${releaseType.toUpperCase()}`);
     console.log(`✨ Próxima Versão: ${nextVersion}`);
 
-    // 4. Verificar Breaking Changes para o log informativo
-    // Se não houver tag anterior, olhamos todo o histórico (HEAD)
-    const range = rawTag ? `${rawTag}..HEAD` : 'HEAD';
-    const commitHistory = git(`git log ${range} --format=%B --`) || "";
-    
-    // Regex para detectar padrão 'feat!:' ou o texto 'BREAKING CHANGE:'
-    const hasBreaking = commitHistory.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/m.test(commitHistory);
-
-    // 5. Exportar para o GitHub Actions
+    // 5. Exportar Outputs
     if (process.env.GITHUB_OUTPUT) {
       const output = [
         `current=${currentVersion}`,
         `next=${nextVersion}`,
         `release_type=${releaseType}`,
-        `breaking=${hasBreaking}`
+        `breaking=${releaseType === 'major'}`
       ].join('\n');
       
       fs.appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
-      console.log("✅ Dados salvos no GITHUB_OUTPUT.");
     }
 
-    console.log("\n🚀 Processo concluído com sucesso!");
-
   } catch (error) {
-    console.error("\n❌ Erro ao processar versão:");
-    console.error(error.message);
+    console.error("❌ Erro:", error.message);
     process.exit(1);
   }
 }
