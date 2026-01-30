@@ -1,4 +1,4 @@
-module.exports = async ({ github, context, core }) => {
+module.exports = ({ github, context, core }) => {
   const fs = require('fs');
   const summary = fs.readFileSync('version-summary.txt', 'utf8');
 
