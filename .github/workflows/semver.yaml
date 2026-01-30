@@ -14,6 +14,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           types: feat fix docs style refactor perf test build ci chore revert
+          requireScope: false
+          validateSingleCommit: false
       
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -37,4 +39,4 @@ jobs:
             ---
             *Última tag: ${{ steps.calc.outputs.last }}*
           edit-mode: replace
-          comment-tag: semantic-version-preview
+          comment-tag: version-preview
