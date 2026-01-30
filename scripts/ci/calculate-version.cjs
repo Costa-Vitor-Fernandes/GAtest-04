@@ -31,8 +31,8 @@ const conventionalRecommendedBump = require('conventional-recommended-bump');
               // Calcula a nova versão
               const newVersion = semver.inc(currentVersion, releaseType);
               
-              // Detecta breaking changes
-              const commits = execSync('git log origin/${{ github.event.pull_request.base.ref }}..HEAD --format=%B')
+              // Detecta breaking changes 
+              const commits = execSync(`git log origin/${process.env.GITHUB_BASE_REF}..HEAD --format=%B`)
                 .toString();
               const hasBreakingChange = commits.includes('BREAKING CHANGE:') || commits.includes('!:');
 
