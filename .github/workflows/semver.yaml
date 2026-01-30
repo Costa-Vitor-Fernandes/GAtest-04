@@ -16,8 +16,6 @@ jobs:
           types: feat fix docs style refactor perf test build ci chore revert
           headerPattern: '^(\w+)(?:\([^)]+\))?!?:\s.+'
           headerPatternCorrespondence: ['type']
-          requireScope: false
-          validateSingleCommit: false
       
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
