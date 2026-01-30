@@ -13,12 +13,11 @@ jobs:
           fetch-depth: 0
       
       - id: validate
-        run: node .github/scripts/validate-commits.cjs
+        run: node .github/scripts/calculate-version.cjs  # NOME DO SEU ARQUIVO
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
           PR_HEAD: ${{ github.event.pull_request.head.sha }}
-          BASE_TAG: v0.0.1
       
       - uses: peter-evans/create-or-update-comment@v3
         with:
