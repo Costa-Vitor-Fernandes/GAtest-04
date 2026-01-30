@@ -195,7 +195,8 @@ jobs:
           NEXT_VERSION: ${{ steps.version.outputs.next }}
           RELEASE_TYPE: ${{ steps.version.outputs.release_type }}
           HAS_BREAKING: ${{ steps.version.outputs.breaking }}
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            node ./scripts/ci/comment-on-pr.cjs
+           node ./scripts/ci/comment-on-pr.cjs

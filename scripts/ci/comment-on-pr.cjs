@@ -1,5 +1,6 @@
 const fs = require('fs');
             const summary = fs.readFileSync('version-summary.txt', 'utf8');
+            console.warn('GITHUB_BASE_REF:', process.env.GITHUB_BASE_REF);
             
             const currentVersion = process.env.CURRENT_VERSION;
             const nextVersion = process.env.NEXT_VERSION;
@@ -30,7 +31,7 @@ const fs = require('fs');
 
             ---
 
-            ${summary}
+
 
             ---
 
