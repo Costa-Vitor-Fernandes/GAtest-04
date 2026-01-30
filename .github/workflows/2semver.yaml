@@ -1,4 +1,4 @@
-name: 2(movendo scripts)Conventional Commits Validation
+name: 2Conventional Commits Validation
 
 on:
   pull_request:
