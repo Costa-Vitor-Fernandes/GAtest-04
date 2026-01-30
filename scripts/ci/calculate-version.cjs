@@ -1,74 +1,72 @@
-const conventionalRecommendedBump = require('conventional-recommended-bump');
-const semver = require('semver');
 const { execSync } = require('child_process');
 const fs = require('fs');
+const semver = require('semver');
+const conventionalRecommendedBump = require('conventional-recommended-bump');
 
-async function calculateVersion() {
+function git(command) {
   try {
-    // 1. Garante que temos as tags para comparar
-    // No CI, muitas vezes as tags não são baixadas automaticamente
-    execSync('git fetch --tags --force');
+    return execSync(command, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
+  } catch (e) {
+    return null;
+  }
+}
 
+async function run() {
+  console.log("🛠️  Iniciando Processo de Versionamento...");
+
+  try {
+    // 1. Garantir que o ambiente tem as tags (O GitHub Actions faz clone raso por padrão)
+    git('git fetch --tags --force');
+
+    // 2. Tentar obter a última tag
+    const rawTag = git('git describe --tags --abbrev=0');
     let currentVersion = '0.0.0';
-    try {
-      // 1. Pegamos a tag bruta do Git
-      const rawTag = execSync('git describe --tags --abbrev=0', { stdio: ['pipe', 'pipe', 'ignore'] })
-        .toString()
-        .trim();
 
-      // 2. Usamos o semver para limpar (remove o 'v', espaços, etc.)
-      // semver.clean('  v1.2.3  ') -> '1.2.3'
-      const cleanedTag = semver.clean(rawTag);
-
-      if (cleanedTag) {
-        currentVersion = cleanedTag;
-      } else {
-        // Se o clean falhar (ex: tag '1.2'), o coerce tenta adivinhar a versão
-        const coerced = semver.coerce(rawTag);
-        currentVersion = coerced ? coerced.version : '0.0.0';
-      }
-      
-      console.log(`✅ Tag encontrada: ${rawTag} -> Versão processada: ${currentVersion}`);
-    } catch (e) {
-      console.log('ℹ️ Nenhuma tag válida encontrada. Iniciando contagem do 0.0.0');
+    if (rawTag) {
+      // semver.clean remove o 'v' e espaços: 'v1.0.0' -> '1.0.0'
+      currentVersion = semver.clean(rawTag) || semver.coerce(rawTag).version || '0.0.0';
     }
-    console.log(`📡 Versão atual detectada: ${currentVersion}`);
+    console.log(`📌 Versão Atual: ${currentVersion}`);
 
-    // 2. Determina o bump (Isso é assíncrono!)
-    const result = await conventionalRecommendedBump({
+    // 3. Calcular o próximo "bump" (salto) baseado nos commits
+    const recommendation = await conventionalRecommendedBump({
       preset: 'conventionalcommits',
       tagPrefix: 'v'
     });
 
-    // Se não houver commits relevantes, o releaseType pode vir undefined
-    let releaseType = result.releaseType || 'patch'; 
-    console.log(`Recommendation: ${releaseType}`);
+    const releaseType = recommendation.releaseType || 'patch';
+    const nextVersion = semver.inc(currentVersion, releaseType);
+    console.log(`📈 Tipo de Release: ${releaseType.toUpperCase()}`);
+    console.log(`✨ Próxima Versão: ${nextVersion}`);
 
-    // 3. Calcula a nova versão
-    const newVersion = semver.inc(currentVersion, releaseType);
+    // 4. Verificar Breaking Changes para o log informativo
+    // Se não houver tag anterior, olhamos todo o histórico (HEAD)
+    const range = rawTag ? `${rawTag}..HEAD` : 'HEAD';
+    const commitHistory = git(`git log ${range} --format=%B --`) || "";
     
-    // 4. Detecta Breaking Changes para o output informativo
-    // Ajustado para olhar do HEAD até a última tag (ou todo o histórico)
-    const logRange = currentVersion === '0.0.0' ? 'HEAD' : `v${currentVersion}..HEAD`;
-    execSync('git fetch --tags --force');
-    const commits = execSync(`git log ${logRange} --format=%B`).toString();
-    const hasBreakingChange = commits.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/.test(commits);
+    // Regex para detectar padrão 'feat!:' ou o texto 'BREAKING CHANGE:'
+    const hasBreaking = commitHistory.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/m.test(commitHistory);
 
-    console.log(`✨ Nova versão: ${newVersion}`);
-    console.log(`⚠️ Breaking changes: ${hasBreakingChange}`);
-    
-    // 5. Output para o GitHub Actions
+    // 5. Exportar para o GitHub Actions
     if (process.env.GITHUB_OUTPUT) {
-      const output = `current=${currentVersion}\nnext=${newVersion}\nrelease_type=${releaseType}\nbreaking=${hasBreakingChange}\n`;
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, output);
-      console.log("✅ Outputs gravados no GITHUB_OUTPUT");
+      const output = [
+        `current=${currentVersion}`,
+        `next=${nextVersion}`,
+        `release_type=${releaseType}`,
+        `breaking=${hasBreaking}`
+      ].join('\n');
+      
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+      console.log("✅ Dados salvos no GITHUB_OUTPUT.");
     }
 
-    return { currentVersion, newVersion, releaseType, hasBreakingChange };
+    console.log("\n🚀 Processo concluído com sucesso!");
+
   } catch (error) {
-    console.error('❌ Erro crítico ao calcular versão:', error.message);
+    console.error("\n❌ Erro ao processar versão:");
+    console.error(error.message);
     process.exit(1);
   }
 }
 
-calculateVersion();
+run();
