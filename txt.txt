@@ -1,2 +1,2 @@
 txt patch -> minor -> major
-patch ->
+patch -> minor -> major
