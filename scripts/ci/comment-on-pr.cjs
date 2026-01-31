@@ -1,6 +1,7 @@
 module.exports = async ({ github, context, core }) => {
   const fs = require('fs');
   
+  const commentTag = '🤖 This comment is automatically updated.';
   // 1. Ler o resumo gerado anteriormente
   const summary = fs.readFileSync('version-summary.txt', 'utf8');
 
@@ -40,7 +41,7 @@ ${summary}
 
 ---
 
-*🤖 This comment is automatically updated.*`;
+${commentTag}`;
 
 const pullRequestNumber = context.payload.pull_request.number;
   if (!pullRequestNumber) {
