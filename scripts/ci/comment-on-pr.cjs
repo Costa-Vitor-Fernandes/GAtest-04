@@ -1,7 +1,5 @@
-import fs from "node:fs/promises"
-
-export default async ({ github, context, core }) => {
-  
+module.exports = async ({ github, context, core }) => {
+  const fs = require('fs');
   const commentTag = '🤖 This comment is automatically updated.';
   // 1. Ler o resumo gerado anteriormente
   const summary = await fs.readFile('version-summary.txt', 'utf8');
