@@ -1,4 +1,4 @@
-import fs from "node:fs/promises=-0987654321"
+import fs from "node:fs/promises"
 
 export default async ({ github, context, core }) => {
   
