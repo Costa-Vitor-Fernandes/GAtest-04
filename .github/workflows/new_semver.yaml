@@ -62,8 +62,6 @@ jobs:
           
       - name: Generate version summary
         id: summary
-        env:
-          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }} 
         run: |
           node ./scripts/ci/generate-summary.cjs
 
