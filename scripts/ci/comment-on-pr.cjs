@@ -2,7 +2,7 @@ module.exports = async ({ github, context, core }) => {
   const fs = require('fs');
   const commentTag = '🤖 This comment is automatically updated.';
   // 1. Ler o resumo gerado anteriormente
-  const summary = await fs.readFile('version-summary.txt', 'utf8');
+  const summary = fs.readFileSync('version-summary.txt', 'utf8');
 
   // 2. Capturar variáveis de ambiente do YAML
   const currentVersion = process.env.CURRENT_VERSION;
