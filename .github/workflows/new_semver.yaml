@@ -72,11 +72,17 @@ jobs:
             const scriptPath = path.resolve('./scripts/ci/comment-on-pr.cjs');
             require(scriptPath)({github, context, core});
 
+      - name: Find Previous Comment
+        id: fc
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '🤖 This comment is automatically updated.'
+
       - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v4
-        with: # Esta linha é obrigatória para agrupar as configurações abaixo
+        with: 
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.generate_body.outputs.comment_body }}
           edit-mode: replace
-          comment-author: 'github-actions[bot]'
-          body-includes: '🤖 This comment is automatically updated.'
