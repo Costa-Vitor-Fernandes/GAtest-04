@@ -22,7 +22,7 @@ module.exports = async ({ github, context, core }) => {
     impactEmoji = '🐛';
     impactText = 'Patch (Bug Fix)';
   } else if (releaseType === 'no-bump'){
-    impactEmoji = '🛇';
+    impactEmoji = '✅';
     impactText = 'No changes'
   }
 
