@@ -21,8 +21,8 @@ module.exports = async ({ github, context, core }) => {
   } else if (releaseType === 'patch') {
     impactEmoji = '🐛';
     impactText = 'Patch (Bug Fix)';
-  } else if (!releaseType){
-    impactEmoji = "🛇🛇";
+  } else if (releaseType === 'no-bump'){
+    impactEmoji = '🛇';
     impactText = 'No changes'
   }
 
