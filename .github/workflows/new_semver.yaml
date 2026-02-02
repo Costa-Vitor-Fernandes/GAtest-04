@@ -74,9 +74,9 @@ jobs:
 
       - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v4
-        with:
-        issue-number: ${{ github.event.pull_request.number }}
-        body: ${{ steps.generate_body.outputs.comment_body }}
-        edit-mode: replace
-        comment-author: 'github-actions[bot]'
-        body-includes: '🤖 This comment is automatically updated.'
+        with: # Esta linha é obrigatória para agrupar as configurações abaixo
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.generate_body.outputs.comment_body }}
+          edit-mode: replace
+          comment-author: 'github-actions[bot]'
+          body-includes: '🤖 This comment is automatically updated.'
