@@ -10,6 +10,18 @@ function git(command) {
   }
 }
 
+function github_output (currentVersion, nextVersion, releaseType){
+  const output = [
+        `current=${currentVersion}`,
+        `next=${nextVersion}`,
+        `release_type=${releaseType}`,
+        `breaking=${releaseType === 'major'}`
+      ].join('\n');
+      
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+      return
+}
+
 async function run() {
   try {
     // 1. Sincronização de Tags
@@ -49,47 +61,21 @@ async function run() {
     // 4.1 Validação de Bump: Se não for nenhum dos acima, releaseType continua null
     else if (!releaseType) {
       console.log("ℹ️ Commits detectados não exigem nova versão (ex: docs, chore, style, test).");
+      nextVersion = null
+      // 5. Exportar Outputs se NÃO HÁ bump                  
+      if (process.env.GITHUB_OUTPUT) return github_output(currentVersion,nextVersion,releaseType)
     }
 
     const nextVersion = semver.inc(currentVersion, releaseType);
-    console.log(`📈 Decisão: ${releaseType.toUpperCase()}`);
+    console.log(`📈 Decisão: ${releaseType}`);
     console.log(`✨ Próxima Versão: ${nextVersion}`);
-    // 4. Lógica de Decisão Manual 
-    // let releaseType = 'patch'; // Padrão
 
-    // if (prCommits.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/m.test(prCommits)) {
-    //   releaseType = 'major';
-    // } else if (/^feat(\(.+\))?:/m.test(prCommits)) {
-    //   releaseType = 'minor';
-    // } else if (/^fix(\(.+\))?:/m.test(prCommits)) {
-    //   releaseType = 'patch';
-    // } else {
-    //   console.log("ℹ️ Nenhum prefixo convencional (feat/fix) encontrado. Mantendo PATCH.");
-    //   releaseType = 'patch';
-    // }
-
-    // const nextVersion = semver.inc(currentVersion, releaseType);
-    
-    // console.log(`📈 Decisão: ${releaseType.toUpperCase()}`);
-    // console.log(`✨ Próxima Versão: ${nextVersion}`);
-
-    // 5. Exportar Outputs
-    if (process.env.GITHUB_OUTPUT) {
-      const output = [
-        `current=${currentVersion}`,
-        `next=${nextVersion}`,
-        `release_type=${releaseType}`,
-        `breaking=${releaseType === 'major'}`
-      ].join('\n');
-      
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
-      return
-    }
+    // 5. Exportar Outputs se há bump
+    if (process.env.GITHUB_OUTPUT) return github_output(currentVersion,nextVersion,releaseType)    
 
   } catch (error) {
     console.error("❌ Erro:", error.message);
     process.exit(1);
   }
 }
-
 run();
