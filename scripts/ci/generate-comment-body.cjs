@@ -1,12 +1,12 @@
 module.exports = async ({ github, context, core }) => {
   const fs = require('fs');
   const commentTag = '🤖 This comment is automatically updated.';
-
+  const [currentVersion, nextVersion, releaseType, hasBreaking ] = process.env.VERSION_OUTPUTS
   // 2. Capturar variáveis de ambiente do YAML
-  const currentVersion = process.env.CURRENT_VERSION;
-  const nextVersion = process.env.NEXT_VERSION;
-  const releaseType = process.env.RELEASE_TYPE;
-  const hasBreaking = process.env.HAS_BREAKING === 'true';
+  // const currentVersion = process.env.CURRENT_VERSION;
+  // const nextVersion = process.env.NEXT_VERSION;
+  // const releaseType = process.env.RELEASE_TYPE;
+  // const hasBreaking = process.env.HAS_BREAKING === 'true';
 
   // 3. Lógica visual (Emojis e Texto)
   let impactEmoji = '📦';
