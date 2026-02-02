@@ -9,7 +9,6 @@ function runCommand(command) {
 }
 
 function validateCommits() {
-//  console.log("🚀 Iniciando validação de mensagens de commit...\n");
 
   // 1. Definição da Base de Comparação
   let baseRef = process.env.GITHUB_BASE_REF;
@@ -39,9 +38,9 @@ function validateCommits() {
     const shortHash = hash.substring(0, 7);
     const commitMsg = runCommand(`git log -1 --format=%B ${hash}`);
     
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log(`🔍 Validando commit ${shortHash}:`);
-    console.log(`"${commitMsg.split('\n')[0]}"`); // Mostra apenas a primeira linha
+    // console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    // console.log(`🔍 Validando commit ${shortHash}:`);
+    // console.log(`"${commitMsg.split('\n')[0]}"`); // Mostra apenas a primeira linha
 
     try {
       // O segredo aqui é passar a mensagem via 'input' e usar 'pipe' para o stdio
@@ -57,7 +56,6 @@ function validateCommits() {
       console.log(`\n❌ Commit ${shortHash} está INVÁLIDO!`);
       console.log("\n⚠️  DICA: Verifique se há espaço após os dois pontos (ex: feat: add algo)");
     }
-    console.log(""); 
   });
 
   // 4. Finalização
@@ -68,7 +66,6 @@ function validateCommits() {
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     process.exit(1);
   }
-
   console.log("🎉 Todos os commits estão dentro do padrão!");
 }
 

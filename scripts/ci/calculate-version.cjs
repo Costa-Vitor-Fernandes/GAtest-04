@@ -11,8 +11,6 @@ function git(command) {
 }
 
 async function run() {
-  console.log("🛠️  Iniciando Processo de Versionamento Estrito...");
-
   try {
     // 1. Sincronização de Tags
     git('git fetch --tags --force');
@@ -24,34 +22,56 @@ async function run() {
       currentVersion = semver.clean(rawTag) || semver.coerce(rawTag).version || '0.0.0';
     }
     console.log(`📌 Versão Atual: ${currentVersion}`);
-
     // 3. Isolar Commits do PR (ignorando o commit de Merge)
-    // O range origin/main..HEAD pega o que é novo nesta branch
+    // O range origin/base-ref..HEAD pega o que é novo nesta branch
     const baseBranch = process.env.GITHUB_BASE_REF || 'main';
-    
     // --no-merges é a chave aqui! Ignora o "Merge pull request..."
     const prCommits = git(`git log origin/${baseBranch}..HEAD --format=%B --no-merges`) || "";
     
     console.log("📝 Analisando mensagens de commit do PR...");
+    // 4. Lógica de Decisão 
+    let releaseType = null;
 
-    // 4. Lógica de Decisão Manual (Mais segura que bibliotecas externas neste caso)
-    let releaseType = 'patch'; // Padrão
-
+// 1. Verificação de MAJOR (Breaking Changes)
     if (prCommits.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/m.test(prCommits)) {
       releaseType = 'major';
-    } else if (/^feat(\(.+\))?:/m.test(prCommits)) {
+    } 
+    // 2. Verificação de MINOR (Novas funcionalidades)
+    else if (/^feat(\(.+\))?:/m.test(prCommits)) {
       releaseType = 'minor';
-    } else if (/^fix(\(.+\))?:/m.test(prCommits)) {
-      releaseType = 'patch';
-    } else {
-      console.log("ℹ️ Nenhum prefixo convencional (feat/fix) encontrado. Mantendo PATCH.");
+    } 
+    // 3. Verificação de PATCH (Correções e melhorias internas)
+    // Aqui incluímos apenas o que deve gerar versão. Docs, chore, style, etc., ficam de fora.
+    else if (/^(fix|perf|refactor)(\(.+\))?:/m.test(prCommits)) {
       releaseType = 'patch';
     }
 
+    // 4.1 Validação de Bump: Se não for nenhum dos acima, releaseType continua null
+    else if (!releaseType) {
+      console.log("ℹ️ Commits detectados não exigem nova versão (ex: docs, chore, style, test).");
+    }
+
     const nextVersion = semver.inc(currentVersion, releaseType);
-    
     console.log(`📈 Decisão: ${releaseType.toUpperCase()}`);
     console.log(`✨ Próxima Versão: ${nextVersion}`);
+    // 4. Lógica de Decisão Manual 
+    // let releaseType = 'patch'; // Padrão
+
+    // if (prCommits.includes('BREAKING CHANGE:') || /^[a-z]+(\(.+\))?!:/m.test(prCommits)) {
+    //   releaseType = 'major';
+    // } else if (/^feat(\(.+\))?:/m.test(prCommits)) {
+    //   releaseType = 'minor';
+    // } else if (/^fix(\(.+\))?:/m.test(prCommits)) {
+    //   releaseType = 'patch';
+    // } else {
+    //   console.log("ℹ️ Nenhum prefixo convencional (feat/fix) encontrado. Mantendo PATCH.");
+    //   releaseType = 'patch';
+    // }
+
+    // const nextVersion = semver.inc(currentVersion, releaseType);
+    
+    // console.log(`📈 Decisão: ${releaseType.toUpperCase()}`);
+    // console.log(`✨ Próxima Versão: ${nextVersion}`);
 
     // 5. Exportar Outputs
     if (process.env.GITHUB_OUTPUT) {
@@ -63,6 +83,7 @@ async function run() {
       ].join('\n');
       
       fs.appendFileSync(process.env.GITHUB_OUTPUT, `${output}\n`);
+      return
     }
 
   } catch (error) {
