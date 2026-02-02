@@ -83,6 +83,6 @@ jobs:
       - name: Create or Update Comment
         uses: peter-evans/create-or-update-comment@v4
         with: 
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ steps.fc.outputs.comment-id }}
           body: ${{ steps.generate_body.outputs.comment_body }}
           edit-mode: replace
