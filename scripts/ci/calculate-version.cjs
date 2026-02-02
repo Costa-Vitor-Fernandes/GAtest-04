@@ -62,7 +62,8 @@ async function run() {
     else if (!releaseType) {
       console.log("ℹ️ Commits detectados não exigem nova versão (ex: docs, chore, style, test).");
       const nextVersion = null
-      // 5. Exportar Outputs se NÃO HÁ bump                  
+      releaseType = "no-bump"
+      // 5. Exportar Outputs se NÃO HÁ bump, continua na currentVersion                 
       if (process.env.GITHUB_OUTPUT) return github_output(currentVersion,currentVersion,releaseType)
     }
 
