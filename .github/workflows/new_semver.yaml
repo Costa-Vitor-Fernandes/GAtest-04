@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -24,17 +24,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      - name: Install dependencies
         run: |
-            npm install --save-dev \
+          npm install --save-dev \
             @commitlint/cli@18.4.3 \
             @commitlint/config-conventional@18.4.3 \
             conventional-changelog-conventionalcommits@7.0.2 \
             conventional-recommended-bump@9.0.0 \
             semver@7.5.4
 
+   
       - name: Validate PR title
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"          
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "Validando título do PR: $PR_TITLE"
+          
           if ! echo "$PR_TITLE" | npx commitlint --verbose --config scripts/ci/commitlint.config.js; then
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "❌ Título do PR está fora do padrão!"
@@ -55,20 +60,22 @@ jobs:
         run: |
           node ./scripts/ci/calculate-version.cjs
           
-      - name: Create or Update Comment
-        uses: peter-evans/create-or-update-comment@v4
+      - name: Generate version summary
+        id: summary
+        run: |
+          node ./scripts/ci/generate-summary.cjs
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        env:
+          CURRENT_VERSION: ${{ steps.version.outputs.current }}
+          NEXT_VERSION: ${{ steps.version.outputs.next }}
+          RELEASE_TYPE: ${{ steps.version.outputs.release_type }}
+          HAS_BREAKING: ${{ steps.version.outputs.breaking }}
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace
-          comment-author: 'github-actions[bot]'
-          body-includes: '🤖 This comment is automatically updated.'
-          body: |
-            ## ${{ steps.version.outputs.release_type }} == 'major' && '💥' || ${{steps.version.outputs.release_type}} == 'minor' && '✨' || '🐛') }} Version Impact Analysis
-
-            **Current Version:** `v${{ steps.version.outputs.current }}`
-            **Predicted Version:** `v${{ steps.version.outputs.next }}`
-            **Release Type:** **${{ steps.version.outputs.release_type }}**
-
-            ${{ steps.version.outputs.breaking }} == 'true' && '> ⚠️ **WARNING:** This PR contains BREAKING CHANGES!' || '' }}
-
-            🤖 This comment is automatically updated.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const path = require('path');
+            const scriptPath = path.resolve('./scripts/ci/comment-on-pr.cjs');
+            require(scriptPath)({github, context, core});
