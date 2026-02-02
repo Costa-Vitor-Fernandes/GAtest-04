@@ -69,6 +69,6 @@ jobs:
             **Predicted Version:** `v${{ steps.version.outputs.next }}`
             **Release Type:** **${{ steps.version.outputs.release_type }}**
 
-            ${{ steps.version.outputs.breaking == 'true' ? '> ⚠️ **WARNING:** This PR contains BREAKING CHANGES!' : '' }}
+            ${{ steps.version.outputs.breaking == 'true' && '> ⚠️ **WARNING:** This PR contains BREAKING CHANGES!' || '' }}
 
             🤖 This comment is automatically updated.
