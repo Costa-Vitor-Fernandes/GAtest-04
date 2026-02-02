@@ -21,6 +21,9 @@ module.exports = async ({ github, context, core }) => {
   } else if (releaseType === 'patch') {
     impactEmoji = '🐛';
     impactText = 'Patch (Bug Fix)';
+  } else if (!releaseType){
+    impactEmoji = "🛇🛇";
+    impactText = 'No changes'
   }
 
   // 4. Montagem do corpo do comentário
