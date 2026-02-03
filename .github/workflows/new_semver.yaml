@@ -50,12 +50,12 @@ jobs:
         id: bump
         run: |
           CURRENT=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          echo "DEBUG Current: [$CURRENT]"
           BUMP=$(npx conventional-recommended-bump -p angular | tr -d '\n')
-          NEXT=$(npx semver $CURRENT -i $BUMP)
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
-          echo "type=$BUMP" >> $GITHUB_OUTPUT
-          echo "next=$NEXT" >> $GITHUB_OUTPUT
-
+          echo "DEBUG Bump: [$BUMP]"
+          echo "DEBUG Running: npx semver $CURRENT -i $BUMP"
+          NEXT=$(npx semver $CURRENT -i $BUMP || echo "FAILED")
+          echo "DEBUG Next: [$NEXT]"
       - name: Find Previous Comment
         id: fc
         uses: peter-evans/find-comment@v3
