@@ -76,4 +76,5 @@ jobs:
           body: |
            ## 📦 Version Impact
             **${{ steps.bump.outputs.type }}** CURRENT TAG: `${{ steps.bump.outputs.current }}` -> next release type -> `${{ steps.bump.outputs.type }}` -> `${{ steps.bump.outputs.next }}`
+             🤖 This comment is automatically updated.
           edit-mode: replace
