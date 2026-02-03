@@ -56,6 +56,9 @@ jobs:
           echo "DEBUG Running: npx semver $CURRENT -i $BUMP"
           NEXT=$(npx semver $CURRENT -i $BUMP || echo "FAILED")
           echo "DEBUG Next: [$NEXT]"
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "type=$BUMP" >> $GITHUB_OUTPUT
+          echo "next=$NEXT" >> $GITHUB_OUTPUT
 
       - name: Find Previous Comment
         id: fc
