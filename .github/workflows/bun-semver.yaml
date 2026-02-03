@@ -1,4 +1,4 @@
-name: 2Conventional Commits Validation
+name: BUNConventional Commits Validation
 
 on:
   pull_request:
@@ -13,21 +13,21 @@ jobs:
   validate-commits:
     name: Validate Conventional Commits
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '24'
+          bun-version: latest
 
       - name: Install dependencies
         run: |
-          npm install --save-dev \
+          bun add --save-dev \
             @commitlint/cli@18.4.3 \
             @commitlint/config-conventional@18.4.3 \
             conventional-changelog-conventionalcommits@7.0.2 \
@@ -38,23 +38,23 @@ jobs:
         run: |
           PR_TITLE="${{ github.event.pull_request.title }}"
           echo "Validando título do PR: $PR_TITLE"
-          if ! echo "$PR_TITLE" | npx commitlint --verbose ; then
+          if ! echo "$PR_TITLE" | bunx commitlint --verbose ; then
             echo "❌ Título do PR está fora do padrão!"
             exit 1
           fi
 
       - name: Validate commits
-        run: npx commitlint --from origin/${{ github.event.pull_request.base.ref }} --to HEAD --verbose 
+        run: bunx commitlint --from origin/${{ github.event.pull_request.base.ref }} --to HEAD --verbose 
 
       - name: Calculate version bump
         id: bump
         run: |
           CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
           echo "DEBUG Current: [$CURRENT]"
-          BUMP=$(npx conventional-recommended-bump -p angular | tr -d '\n')
+          BUMP=$(bunx conventional-recommended-bump -p angular | tr -d '\n')
           echo "DEBUG Bump: [$BUMP]"
           echo "DEBUG Running: npx semver $CURRENT -i $BUMP"
-          NEXT=$(npx semver $CURRENT -i $BUMP || echo "FAILED")
+          NEXT=$(bunx semver $CURRENT -i $BUMP || echo "FAILED")
           echo "DEBUG Next: [$NEXT]"
           echo "current=$CURRENT" >> $GITHUB_OUTPUT
           echo "type=$BUMP" >> $GITHUB_OUTPUT
@@ -76,5 +76,4 @@ jobs:
           body: |
            ## 📦 Version Impact
             **${{ steps.bump.outputs.type }}** CURRENT TAG: `${{ steps.bump.outputs.current }}` -> next release type -> `${{ steps.bump.outputs.type }}` -> `${{ steps.bump.outputs.next }}`
-             🤖 This comment is automatically updated.
           edit-mode: replace

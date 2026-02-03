@@ -4,6 +4,7 @@
               'type-enum': [
                 2,
                 'always',
+                
                 [
                   'feat',     // Nova funcionalidade
                   'fix',      // Correção de bug
