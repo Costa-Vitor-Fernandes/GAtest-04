@@ -43,11 +43,8 @@ jobs:
             exit 1
           fi
 
-      - name: Validate PR commit messages
-        env:
-          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
-        run: |
-          node ./scripts/ci/validate-commits.cjs
+      - name: Validate commits
+        run: npx commitlint --from origin/${{ github.event.pull_request.base.ref }} --to HEAD --verbose --config scripts/ci/commitlint.config.js
 
       # - name: Calculate next version
       #   id: version
