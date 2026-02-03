@@ -49,7 +49,7 @@ jobs:
       - name: Calculate version bump
         id: bump
         run: |
-          CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v\.//' || echo "0.0.0"))
+          CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v\./v/' || echo "0.0.0")
           BUMP=$(npx conventional-recommended-bump -p angular | tr -d '\n')
           NEXT=$(npx semver $CURRENT -i $BUMP || echo "FAILED")
 
