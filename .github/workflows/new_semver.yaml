@@ -49,13 +49,10 @@ jobs:
       - name: Calculate version bump
         id: bump
         run: |
-          CURRENT=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
-          echo "DEBUG Current: [$CURRENT]"
+          CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v\.//' || echo "0.0.0"))
           BUMP=$(npx conventional-recommended-bump -p angular | tr -d '\n')
-          echo "DEBUG Bump: [$BUMP]"
-          echo "DEBUG Running: npx semver $CURRENT -i $BUMP"
           NEXT=$(npx semver $CURRENT -i $BUMP || echo "FAILED")
-          echo "DEBUG Next: [$NEXT]"
+
       - name: Find Previous Comment
         id: fc
         uses: peter-evans/find-comment@v3
