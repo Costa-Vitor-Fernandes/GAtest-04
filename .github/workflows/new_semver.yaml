@@ -75,5 +75,5 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
            ## 📦 Version Impact
-            **${{ steps.bump.outputs.type }}** CURRENT TAG: `${{ steps.bump.outputs.current }}` -> next release type -> `${{ steps.bump.outputs.type }}` -> `${{ steps.bump.outputs.next }}
+            **${{ steps.bump.outputs.type }}** CURRENT TAG: `${{ steps.bump.outputs.current }}` -> next release type -> `${{ steps.bump.outputs.type }}` -> `${{ steps.bump.outputs.next }}`
           edit-mode: replace
