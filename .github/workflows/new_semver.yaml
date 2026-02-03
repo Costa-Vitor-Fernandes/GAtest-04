@@ -51,8 +51,10 @@ jobs:
         run: |
           CURRENT=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
           BUMP=$(npx conventional-recommended-bump -p angular)
+          NEXT=$(npx semver $CURRENT -i $BUMP)
           echo "current=$CURRENT" >> $GITHUB_OUTPUT
           echo "type=$BUMP" >> $GITHUB_OUTPUT
+          echo "next=$NEXT" >> $GITHUB_OUTPUT
 
       - name: Find Previous Comment
         id: fc
@@ -69,5 +71,5 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
            ## 📦 Version Impact
-            **${{ steps.bump.outputs.type }}** CURRENT TAG: `${{ steps.bump.outputs.current }}` → next release type -> ${{ steps.bump.outputs.type }}
+            **${{ steps.bump.outputs.type }}** CURRENT TAG: `${{ steps.bump.outputs.current }}` -> next release type -> `${{ steps.bump.outputs.type }}` -> `${{ steps.bump.outputs.next }}
           edit-mode: replace
