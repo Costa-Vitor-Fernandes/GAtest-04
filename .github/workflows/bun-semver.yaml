@@ -76,12 +76,12 @@ jobs:
           
           echo ""
           echo "DEBUG Running conventional-recommended-bump with verbose:"
-          bunx conventional-recommended-bump --config bump-config.cjs 2>/dev/null 2>&1
+          bunx conventional-recommended-bump --config bump-config.cjs 2>&1
           
           echo ""
           echo "DEBUG Git log com formato:"
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%H %s" | head -5
-          export BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs)
+          export BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs 2>&1 )
           echo "DEBUG Bump captured: $BUMP"
           echo "DEBUG Bump length: ${#BUMP}"
           
