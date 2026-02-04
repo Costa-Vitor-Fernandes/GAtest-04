@@ -1,13 +1,23 @@
-module.exports = ({
-  types: [
-    { type: 'feat',     release: 'minor' },
-    { type: 'fix',      release: 'patch' },
-    { type: 'perf',     release: 'patch' },
-    { type: 'refactor', release: 'patch' },
-    { type: 'docs',     release: false }, // não sobe versão
-    { type: 'chore',    release: false },
-    { type: 'ci',       release: false },
-    { type: 'style',    release: false },
-    { type: 'test',     release: false },
-  ]
-});
+module.exports = {
+  whatBump: (commits) => {
+    const mappings = {
+      'fix!': 0,
+      'feat!': 0, // 0 == major
+      feat: 1, // 1 == minor
+      fix: 2, // 2 == patch
+      refactor: 2,
+      revert: 2
+      // undefined == no-bump
+    };
+
+    let level = 2;
+    
+    commits.forEach(commit => {
+      if (mappings[commit.type] !== undefined && mappings[commit.type] < level) {
+        level = mappings[commit.type];
+      }
+    });
+
+    return { level };
+  }
+};
