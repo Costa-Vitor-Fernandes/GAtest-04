@@ -7,10 +7,10 @@ module.exports = {
     },
       whatBump: (commits) => {
               // DEBUG
-      console.log('Total commits:', commits.length);
-      if (commits.length > 0) {
-        console.log('First commit:', JSON.stringify(commits[0]));
-      }
+      // console.log('Total commits:', commits.length);
+      // if (commits.length > 0) {
+      //   console.log('First commit:', JSON.stringify(commits[0]));
+      // }
     const mappings = {
       'fix!': 0,
       'feat!': 0, // 0 == major
