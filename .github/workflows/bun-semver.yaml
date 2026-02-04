@@ -53,7 +53,7 @@ jobs:
           echo "DEBUG Current: [$CURRENT]"
           BUMP=$(bunx conventional-recommended-bump -p | tr -d '\n')
           echo "DEBUG Bump: [$BUMP]"
-          echo "DEBUG Running: npx semver $CURRENT -i $BUMP"
+          echo "DEBUG Running: bunx semver $CURRENT -i $BUMP"
           NEXT=$(bunx semver $CURRENT -i $BUMP || echo "FAILED")
           echo "DEBUG Next: [$NEXT]"
           echo "current=$CURRENT" >> $GITHUB_OUTPUT
