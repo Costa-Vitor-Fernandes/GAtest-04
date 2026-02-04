@@ -1,10 +1,16 @@
 module.exports = {
     //infelizmente precisamos do parser OU '-p angular' que NESSE CASO vai fazer exatamente isso aqui pelo que estou entendendo
+  recommendedBumpOpts: {
     parserOpts: {
-    headerPattern: /^(\w*)(?:\((.*)\))?!?: (.*)$/,
-    headerCorrespondence: ['type', 'scope', 'subject']
-  },
+      headerPattern: /^(\w*)(?:\((.*)\))?!?: (.*)$/,
+      headerCorrespondence: ['type', 'scope', 'subject']
+    }},
     whatBump: (commits) => {
+              // DEBUG
+      console.log('Total commits:', commits.length);
+      if (commits.length > 0) {
+        console.log('First commit:', JSON.stringify(commits[0]));
+      }
     const mappings = {
       'fix!': 0,
       'feat!': 0, // 0 == major
