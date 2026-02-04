@@ -48,18 +48,47 @@ jobs:
 
       - name: Calculate version bump
         id: bump
+# echo "DEBUG Current: [$CURRENT]"
+# CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
+# echo "DEBUG Bump: [$BUMP](bunx conventional-recommended-bump --config bump-config.cjs)"
+# BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs 2>&1 || echo "")
+# NEXT=$(bunx semver $CURRENT -i $BUMP || echo "FAILED")
+# echo "DEBUG Running: bunx semver $CURRENT -i $BUMP"
+# echo "current=$CURRENT" >> $GITHUB_OUTPUT
+# echo "DEBUG Next: [$NEXT]"
+# echo "next=$NEXT" >> $GITHUB_OUTPUT
+# echo "type=$BUMP" >> $GITHUB_OUTPUT
         run: |
+          echo "Claudio debuga"
           CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
           echo "DEBUG Current: [$CURRENT]"
-          BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs 2>&1 || echo "")
-          echo "DEBUG Bump: [$BUMP](bunx conventional-recommended-bump --config bump-config.cjs)"
-          echo "DEBUG Running: bunx semver $CURRENT -i $BUMP"
-          NEXT=$(bunx semver $CURRENT -i $BUMP || echo "FAILED")
-          echo "DEBUG Next: [$NEXT]"
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
-          echo "type=$BUMP" >> $GITHUB_OUTPUT
-          echo "next=$NEXT" >> $GITHUB_OUTPUT
-
+          
+          echo "DEBUG Commits since last tag:"
+          git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD --pretty=format:"%s"
+          
+          echo ""
+          echo "DEBUG bump-config.cjs exists?"
+          ls -la bump-config.cjs
+          
+          echo ""
+          echo "DEBUG bump-config.cjs content:"
+          cat bump-config.cjs
+          
+          echo ""
+          echo "DEBUG Running conventional-recommended-bump with verbose:"
+          bunx conventional-recommended-bump --config bump-config.cjs --verbose
+          
+          echo ""
+          BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs)
+          echo "DEBUG Bump captured: [$BUMP]"
+          echo "DEBUG Bump length: ${#BUMP}"
+          
+          if [ -z "$BUMP" ]; then
+            echo "No version bump needed"
+            echo "bump=none" >> $GITHUB_OUTPUT
+          else
+            echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          fi
       - name: Find Previous Comment
         id: fc
         uses: peter-evans/find-comment@v3
