@@ -82,7 +82,7 @@ jobs:
           echo "DEBUG Git log com formato:"
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%H %s" | head -5
           BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs 2>/dev/null)
-          echo "DEBUG Bump captured: [$BUMP]"
+          echo "DEBUG Bump captured: $BUMP"
           echo "DEBUG Bump length: ${#BUMP}"
           
           if [ -z "$BUMP" ]; then
