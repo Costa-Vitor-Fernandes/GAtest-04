@@ -1,7 +1,7 @@
 module.exports = {
     //infelizmente precisamos do parser OU '-p angular' que NESSE CASO vai fazer exatamente isso aqui pelo que estou entendendo
 
-    parserOpts: {
+    parser: {
       headerPattern: /^(\w*)(?:\((.*)\))?!?: (.*)$/,
       headerCorrespondence: ['type', 'scope', 'subject']
     },
@@ -17,7 +17,8 @@ module.exports = {
       feat: 1, // 1 == minor
       fix: 2, // 2 == patch
       refactor: 2,
-      revert: 2
+      revert: 2,
+      // ci: 0,
       // undefined == no-bump
     };
 
