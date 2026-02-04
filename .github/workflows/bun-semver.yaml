@@ -76,7 +76,7 @@ jobs:
           
           echo ""
           echo "DEBUG Running conventional-recommended-bump with verbose:"
-          bunx conventional-recommended-bump --config bump-config.cjs 2>/dev/null
+          bunx conventional-recommended-bump --config bump-config.cjs 2>/dev/null 2>&1
           
           echo ""
           echo "DEBUG Git log com formato:"
