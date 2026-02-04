@@ -51,8 +51,8 @@ jobs:
         run: |
           CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
           echo "DEBUG Current: [$CURRENT]"
-          BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs)
-          echo "DEBUG Bump: [$BUMP]"
+          BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs 2>&1 || echo "")
+          echo "DEBUG Bump: [$BUMP](bunx conventional-recommended-bump --config bump-config.cjs)"
           echo "DEBUG Running: bunx semver $CURRENT -i $BUMP"
           NEXT=$(bunx semver $CURRENT -i $BUMP || echo "FAILED")
           echo "DEBUG Next: [$NEXT]"
