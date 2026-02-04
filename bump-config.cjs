@@ -1,6 +1,4 @@
-const spec = require('conventional-changelog-conventionalcommits');
-
-module.exports = spec({
+module.exports = ({
   types: [
     { type: 'feat',     release: 'minor' },
     { type: 'fix',      release: 'patch' },
