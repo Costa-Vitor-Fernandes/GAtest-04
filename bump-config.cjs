@@ -1,5 +1,10 @@
 module.exports = {
-  whatBump: (commits) => {
+    //infelizmente precisamos do parser OU '-p angular' que NESSE CASO vai fazer exatamente isso aqui pelo que estou entendendo
+    parserOpts: {
+    headerPattern: /^(\w*)(?:\((.*)\))?!?: (.*)$/,
+    headerCorrespondence: ['type', 'scope', 'subject']
+  },
+    whatBump: (commits) => {
     const mappings = {
       'fix!': 0,
       'feat!': 0, // 0 == major
