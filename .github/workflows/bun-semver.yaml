@@ -48,18 +48,53 @@ jobs:
 
       - name: Calculate version bump
         id: bump
+# echo "DEBUG Current: [$CURRENT]"
+# CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
+# echo "DEBUG Bump: [$BUMP](bunx conventional-recommended-bump --config bump-config.cjs)"
+# BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs 2>&1 || echo "")
+# NEXT=$(bunx semver $CURRENT -i $BUMP || echo "FAILED")
+# echo "DEBUG Running: bunx semver $CURRENT -i $BUMP"
+# echo "current=$CURRENT" >> $GITHUB_OUTPUT
+# echo "DEBUG Next: [$NEXT]"
+# echo "next=$NEXT" >> $GITHUB_OUTPUT
+# echo "type=$BUMP" >> $GITHUB_OUTPUT
         run: |
+          echo "Claudio debuga"
           CURRENT=$(git describe --tags --abbrev=0 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "0.0.0")
           echo "DEBUG Current: [$CURRENT]"
-          BUMP=$(bunx conventional-recommended-bump -p angular | tr -d '\n')
-          echo "DEBUG Bump: [$BUMP]"
-          echo "DEBUG Running: npx semver $CURRENT -i $BUMP"
-          NEXT=$(bunx semver $CURRENT -i $BUMP || echo "FAILED")
-          echo "DEBUG Next: [$NEXT]"
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
-          echo "type=$BUMP" >> $GITHUB_OUTPUT
-          echo "next=$NEXT" >> $GITHUB_OUTPUT
-
+          
+          echo "DEBUG Commits since last tag:"
+          git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD --pretty=format:"%s"
+          
+          echo ""
+          echo "DEBUG bump-config.mjs exists?"
+          ls -la bump-config.mjs
+          
+          echo ""
+          echo "DEBUG bump-config.mjs content:"
+          cat bump-config.mjs
+          
+          echo ""
+          echo "DEBUG Running conventional-recommended-bump without $BUMP "
+          bunx conventional-recommended-bump --config bump-config.mjs
+          
+          echo ""
+          BUMP=$(bunx conventional-recommended-bump --config bump-config.mjs 2>&1)
+          echo "Raw output: [$BUMP]"
+          BUMP=$(echo "$BUMP" | grep -E '^(major|minor|patch)$' | head -1 | tr -d '\n')
+          echo "Filtered bump: [$BUMP]"
+          echo "DEBUG Git log com formato:"
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%H %s" | head -5
+          echo "DEBUG Running get-bump.mjs:"
+          export BUMP=$(bun get-bump.mjs 2>&1 | tail -1 | tr -d '\n')
+          echo "DEBUG Bump captured: [$BUMP]"
+          
+          if [ -z "$BUMP" ] || [ "$BUMP" = "none" ]; then
+            echo "No version bump needed"
+            echo "bump=none" >> $GITHUB_OUTPUT
+          else
+            echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          fi
       - name: Find Previous Comment
         id: fc
         uses: peter-evans/find-comment@v3
@@ -76,4 +111,5 @@ jobs:
           body: |
            ## 📦 Version Impact
             **${{ steps.bump.outputs.type }}** CURRENT TAG: `${{ steps.bump.outputs.current }}` -> next release type -> `${{ steps.bump.outputs.type }}` -> `${{ steps.bump.outputs.next }}`
+            '🤖 This comment is automatically updated.'
           edit-mode: replace
