@@ -81,16 +81,11 @@ jobs:
           echo ""
           echo "DEBUG Git log com formato:"
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%H %s" | head -5
-          export BUMP=$(bunx --quiet conventional-recommended-bump --config bump-config.mjs | tr -d '\n')
-          echo "DEBUG Bump captured: $BUMP"
-          echo "DEBUG Bump length: ${#BUMP}"
-          echo "--- Teste de Saída Direta ---"
-          bunx --quiet conventional-recommended-bump --config bump-config.mjs
-          echo "--- Teste de Captura ---"
-          RAW_OUT=$(bunx --quiet conventional-recommended-bump --config bump-config.mjs)
-          echo "Saída crua: '$RAW_OUT'"
+          echo "DEBUG Running get-bump.mjs:"
+          export BUMP=$(bun get-bump.mjs 2>&1 | tail -1 | tr -d '\n')
+          echo "DEBUG Bump captured: [$BUMP]"
           
-          if [ -z "$BUMP" ]; then
+          if [ -z "$BUMP" ] || [ "$BUMP" = "none" ]; then
             echo "No version bump needed"
             echo "bump=none" >> $GITHUB_OUTPUT
           else
