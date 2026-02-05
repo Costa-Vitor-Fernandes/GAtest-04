@@ -84,6 +84,11 @@ jobs:
           export BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs | tr -d '\n')
           echo "DEBUG Bump captured: $BUMP"
           echo "DEBUG Bump length: ${#BUMP}"
+          echo "--- Teste de Saída Direta ---"
+          bunx conventional-recommended-bump --config bump-config.cjs
+          echo "--- Teste de Captura ---"
+          RAW_OUT=$(bunx conventional-recommended-bump --config bump-config.cjs)
+          echo "Saída crua: '$RAW_OUT'"
           
           if [ -z "$BUMP" ]; then
             echo "No version bump needed"
