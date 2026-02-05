@@ -33,7 +33,7 @@
 //     }
 //   }
 // };
-
+// //daqui pra baixo parece meio ruim, mas é só pra mapear o resultado do conventional-recommended-bump para os tipos de release
 // conventionalRecommendedBump(options, (err, result) => {
 //   if (err) {
 //     console.error('Error:', err);
@@ -47,4 +47,5 @@
 //     : 'none';
   
 //   console.log(releaseType);
+//   //return releaseType; ??
 // });
