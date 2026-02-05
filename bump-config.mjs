@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     //infelizmente precisamos do parser OU '-p angular' que NESSE CASO vai fazer exatamente isso aqui pelo que estou entendendo
 
     parser: {

@@ -67,27 +67,27 @@ jobs:
           git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD --pretty=format:"%s"
           
           echo ""
-          echo "DEBUG bump-config.cjs exists?"
-          ls -la bump-config.cjs
+          echo "DEBUG bump-config.mjs exists?"
+          ls -la bump-config.mjs
           
           echo ""
-          echo "DEBUG bump-config.cjs content:"
-          cat bump-config.cjs
+          echo "DEBUG bump-config.mjs content:"
+          cat bump-config.mjs
           
           echo ""
           echo "DEBUG Running conventional-recommended-bump with verbose:"
-          bunx conventional-recommended-bump --config bump-config.cjs
+          bunx conventional-recommended-bump --config bump-config.mjs
           
           echo ""
           echo "DEBUG Git log com formato:"
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%H %s" | head -5
-          export BUMP=$(bunx conventional-recommended-bump --config bump-config.cjs | tr -d '\n')
+          export BUMP=$(bunx conventional-recommended-bump --config bump-config.mjs | tr -d '\n')
           echo "DEBUG Bump captured: $BUMP"
           echo "DEBUG Bump length: ${#BUMP}"
           echo "--- Teste de Saída Direta ---"
-          bunx conventional-recommended-bump --config bump-config.cjs
+          bunx conventional-recommended-bump --config bump-config.mjs
           echo "--- Teste de Captura ---"
-          RAW_OUT=$(bunx conventional-recommended-bump --config bump-config.cjs)
+          RAW_OUT=$(bunx conventional-recommended-bump --config bump-config.mjs)
           echo "Saída crua: '$RAW_OUT'"
           
           if [ -z "$BUMP" ]; then
