@@ -81,7 +81,7 @@ jobs:
           echo ""
           echo "DEBUG Git log com formato:"
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%H %s" | head -5
-          export BUMP= wait $(bunx conventional-recommended-bump --config bump-config.cjs --yes)
+          export BUMP= wait $(bunx conventional-recommended-bump -p angular)
           echo "DEBUG Bump captured: $BUMP"
           echo "DEBUG Bump length: ${#BUMP}"
           
