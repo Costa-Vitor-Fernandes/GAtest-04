@@ -7,7 +7,7 @@
  */
 // USAGE: bun scripts/get-next-version.ts <currentVersion>
 
-import { setOutput }  from "@actions/core"
+
 import { Bumper } from 'conventional-recommended-bump'
 import { inc } from 'semver'
 
