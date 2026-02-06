@@ -14,7 +14,7 @@ import { Bumper } from 'conventional-recommended-bump'
 import { inc } from 'semver'
 
 const args = Bun.argv.slice(2);
-// console.log('Args:', args);
+console.log('Args:', args);
 const currentVersion = args[0];
 const isReleaseTypeRequested = args.includes('--releaseType');
 
