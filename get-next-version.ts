@@ -25,6 +25,7 @@ if (!currentVersion || currentVersion.startsWith('--')) {
 
 const bumper = new Bumper().loadPreset('conventionalcommits')
 const recommendation = await bumper.bump()
+//@ts-ignore
 const releaseType = recommendation.releaseType
 const nextVersion = inc(currentVersion, releaseType)
 
