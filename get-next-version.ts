@@ -18,12 +18,12 @@ if (!currentVersion) {
 }
 const bumper = new Bumper().loadPreset('conventionalcommits')
 const recommendation = await bumper.bump()
-//ts-ignore
+//@ts-ignore
 const releaseType = recommendation.releaseType
 
-setOutput('current', currentVersion)
-setOutput('type', releaseType)
+// setOutput('current', currentVersion)
+// setOutput('type', releaseType)
 const nextVersion = inc(currentVersion, releaseType)
-setOutput('next', nextVersion)
-// console.log(nextVersion)
+// setOutput('next', nextVersion)
+console.log(nextVersion)
 
