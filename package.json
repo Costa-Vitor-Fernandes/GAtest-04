@@ -1,0 +1,19 @@
+{
+  "name": "gatest-04",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "@types/semver": "^7.7.1",
+    "commitlint": "^20.4.1",
+    "conventional-recommended-bump": "^11.2.0",
+    "semver": "^7.7.4"
+  }
+}
